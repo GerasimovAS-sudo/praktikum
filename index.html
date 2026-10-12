@@ -1,1 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f0f1a">
+<title>Практикум</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f0f1a;color:#eaeaf5;line-height:1.5;padding:20px 16px 100px;min-height:100vh}
+.wrap{max-width:600px;margin:0 auto}
+h1{font-size:24px;text-align:center;margin-bottom:4px;background:linear-gradient(135deg,#a29bfe,#6c5ce7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{text-align:center;color:#8888a8;font-size:13px;margin-bottom:24px}
+.books{display:flex;gap:10px;overflow-x:auto;padding-bottom:16px;margin-bottom:16px;scrollbar-width:none}
+.books::-webkit-scrollbar{display:none}
+.bk{min-width:110px;background:#1a1a2e;border:1px solid #2a2a45;border-radius:14px;padding:12px;text-align:center;cursor:pointer;flex-shrink:0;transition:.2s}
+.bk.on{background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-color:transparent}
+.bk .em{font-size:26px;margin-bottom:6px}
+.bk .t{font-size:12px;font-weight:600;line-height:1.3}
+.bk .a{font-size:10px;color:#8888a8;margin-top:3px}
+.bk.on .a{color:rgba(255,255,255,.8)}
+.card{background:#1a1a2e;border:1px solid #2a2a45;border-radius:18px;padding:20px;margin-bottom:16px}
+.row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.row h2{font-size:16px}
+.row .pc{color:#a29bfe;font-weight:700;font-size:18px}
+.bar{height:8px;background:#22223a;border-radius:4px;overflow:hidden;margin-bottom:6px}
+.fill{height:100%;background:linear-gradient(90deg,#6c5ce7,#a29bfe);border-radius:4px;transition:width .3s;width:0}
+.sub2{font-size:12px;color:#8888a8}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:14px}
+.d{aspect-ratio:1;background:#22223a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#8888a8;cursor:pointer;border:1px solid transparent;transition:.2s}
+.d.done{background:linear-gradient(135deg,#00b894,#00cec9);color:#fff}
+.d.today{border-color:#a29bfe;color:#a29bfe}
+.title{font-size:15px;font-weight:700;margin:20px 0 12px}
+.p{background:#1a1a2e;border:1px solid #2a2a45;border-radius:14px;padding:16px;margin-bottom:8px;cursor:pointer;display:flex;gap:12px;align-items:flex-start;transition:.2s}
+.p.done{opacity:.55}
+.p.done .pt{text-decoration:line-through}
+.cb{width:22px;height:22px;border:2px solid #2a2a45;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:.2s;font-size:13px;color:transparent}
+.p.done .cb{background:#00b894;border-color:#00b894;color:#fff}
+.pt{font-weight:600;font-size:14px;margin-bottom:3px}
+.pd{font-size:12px;color:#8888a8;line-height:1.4}
+.ptime{font-size:10px;color:#a29bfe;margin-top:5px;display:inline-block;background:rgba(108,92,231,.15);padding:2px 7px;border-radius:5px}
+textarea{width:100%;background:#1a1a2e;border:1px solid #2a2a45;border-radius:14px;padding:14px;color:#eaeaf5;font-family:inherit;font-size:14px;resize:vertical;min-height:90px;line-height:1.5}
+textarea:focus{outline:none;border-color:#6c5ce7}
+button{margin-top:10px;background:#6c5ce7;color:#fff;border:none;padding:11px 22px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
+button:active{background:#a29bfe}
+.note{font-size:12px;color:#00b894;margin-top:8px;text-align:center;opacity:0;transition:.3s}
+.note.on{opacity:1}
+.reset{background:transparent;border:1px solid #2a2a45;color:#8888a8;margin-top:24px;font-size:12px}
+.reset:active{border-color:#ff6b6b;color:#ff6b6b}
+footer{text-align:center;padding:24px 0;color:#8888a8;font-size:11px}
+@media(max-width:400px){.grid{grid-template-columns:repeat(5,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Практикум</h1>
+<p class="sub">Не читай книгу — внедри её в жизнь</p>
 
+<div class="books" id="books"></div>
+
+<div class="card">
+<div class="row"><h2 id="bname">—</h2><span class="pc" id="ppct">0%</span></div>
+<div class="bar"><div class="fill" id="pfill"></div></div>
+<div class="sub2" id="psub">0 из 30 дней</div>
+<div class="grid" id="grid"></div>
+</div>
+
+<div class="title">📋 Практики на сегодня</div>
+<div id="practices"></div>
+
+<div class="title">✍️ Дневник</div>
+<textarea id="jt" placeholder="Что получилось? Что было сложно? Что заметил?"></textarea>
+<button onclick="saveJ()">Сохранить запись</button>
+<div class="note" id="note">✓ Сохранено</div>
+
+<button class="reset" onclick="resetAll()">Сбросить весь прогресс</button>
+
+<footer>Данные только в твоём браузере.<br>Ничего не отправляется на сервер.</footer>
+</div>
+<script>
+const BOOKS=[
+{id:'mm',em:'🌅',t:'Магия утра',a:'Хэл Элрод',p:[
+{id:'p1',t:'Тишина',d:'5 минут тишины. Сиди, дыши, наблюдай за мыслями.',time:'5 мин'},
+{id:'p2',t:'Аффирмации',d:'Проговори 3 установки на день.',time:'5 мин'},
+{id:'p3',t:'Визуализация',d:'Представь идеальный день. Детально.',time:'5 мин'},
+{id:'p4',t:'Дневник',d:'Запиши 3 благодарности и 1 цель.',time:'5 мин'},
+{id:'p5',t:'Чтение',d:'10 минут полезной книги.',time:'10 мин'},
+{id:'p6',t:'Спорт',d:'Любая активность. Даже прогулка.',time:'10 мин'}]},
+{id:'ah',em:'⚛️',t:'Атомные привычки',a:'Джеймс Клир',p:[
+{id:'p1',t:'Правило 2 минут',d:'Начни с версии на 2 минуты.',time:'2 мин'},
+{id:'p2',t:'Привязка',d:'После [старая] я буду [новая].',time:'5 мин'},
+{id:'p3',t:'Среда',d:'Хорошую привычку — очевидной.',time:'10 мин'},
+{id:'p4',t:'Трекер',d:'Отметь выполнение.',time:'1 мин'}]},
+{id:'dw',em:'🎯',t:'В работу с головой',a:'Кэл Ньюпорт',p:[
+{id:'p1',t:'Блок времени',d:'90 минут глубокой работы.',time:'90 мин'},
+{id:'p2',t:'Отключение',d:'Убери уведомления.',time:'2 мин'},
+{id:'p3',t:'Ритуал входа',d:'Одинаковый ритуал начала.',time:'5 мин'},
+{id:'p4',t:'Рефлексия',d:'Запиши, что отвлекло.',time:'5 мин'}]}
+];
+
+let cur=localStorage.getItem('cur')||BOOKS[0].id;
+let st=JSON.parse(localStorage.getItem('st')||'{}');
+
+function gb(id){if(!st[id])st[id]={days:{},prac:{},j:{}};return st[id]}
+function save(){localStorage.setItem('st',JSON.stringify(st));localStorage.setItem('cur',cur)}
+function today(){const b=gb(cur);const d=Object.keys(b.days).filter(k=>b.days[k]).length;return Math.min(d+1,30)}
+
+function renderBooks(){
+document.getElementById('books').innerHTML=BOOKS.map(b=>
+`<div class="bk ${b.id===cur?'on':''}" onclick="pick('${b.id}')">
+<div class="em">${b.em}</div><div class="t">${b.t}</div><div class="a">${b.a}</div></div>`).join('');
+}
+
+function pick(id){cur=id;save();renderAll()}
+
+function renderProg(){
+const b=BOOKS.find(x=>x.id===cur);const bs=gb(cur);
+const done=Object.keys(bs.days).filter(k=>bs.days[k]).length;
+const pct=Math.round(done/30*100);
+document.getElementById('bname').textContent=b.t;
+document.getElementById('ppct').textContent=pct+'%';
+document.getElementById('pfill').style.width=pct+'%';
+document.getElementById('psub').textContent=done+' из 30 дней';
+const td=today();
+document.getElementById('grid').innerHTML=Array.from({length:30},(_,i)=>{
+const d=i+1;const dn=bs.days[d];const it=d===td&&!dn;
+return `<div class="d ${dn?'done':''} ${it?'today':''}" onclick="tDay(${d})">${d}</div>`;
+}).join('');
+}
+
+function tDay(d){const bs=gb(cur);bs.days[d]=!bs.days[d];save();renderProg();renderPrac()}
+
+function renderPrac(){
+const b=BOOKS.find(x=>x.id===cur);const bs=gb(cur);const td=today();
+document.getElementById('practices').innerHTML=b.p.map(p=>{
+const k=td+'-'+p.id;const dn=bs.prac[k];
+return `<div class="p ${dn?'done':''}" onclick="tPrac('${k}')">
+<div class="cb">✓</div>
+<div><div class="pt">${p.t}</div><div class="pd">${p.d}</div>
+<div class="ptime">⏱ ${p.time}</div></div></div>`;
+}).join('');
+}
+
+function tPrac(k){const bs=gb(cur);bs.prac[k]=!bs.prac[k];save();renderPrac()}
+
+function saveJ(){
+const bs=gb(cur);const td=today();
+bs.j[td]=document.getElementById('jt').value;save();
+const n=document.getElementById('note');n.classList.add('on');
+setTimeout(()=>n.classList.remove('on'),2000);
+}
+
+function loadJ(){const bs=gb(cur);const td=today();document.getElementById('jt').value=bs.j[td]||''}
+
+function resetAll(){
+if(confirm('Сбросить весь прогресс? Нельзя отменить.')){
+st={};save();renderAll();
+}}
+
+function renderAll(){renderBooks();renderProg();renderPrac();loadJ()}
+renderAll();
+</script>
+</body>
+</html>
