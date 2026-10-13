@@ -166,3 +166,828 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 }
 </style>
 </head>
+<body>
+
+<!-- === ЭКРАН ВХОДА === -->
+<div class="auth" id="authScreen">
+  <div class="auth-logo">
+    <div class="ico">🌅</div>
+    <h1>Практикум</h1>
+    <p>Не читай книгу — внедри её в жизнь</p>
+  </div>
+
+  <div class="auth-tabs">
+    <div class="auth-tab on" id="tabLogin" onclick="switchTab('login')">Войти</div>
+    <div class="auth-tab" id="tabReg" onclick="switchTab('reg')">Регистрация</div>
+  </div>
+
+  <div class="field">
+    <label>Номер телефона</label>
+    <input type="tel" id="phone" placeholder="+7 999 123-45-67" inputmode="tel" maxlength="18">
+  </div>
+
+  <div class="field">
+    <label>Пароль</label>
+    <input type="password" id="password" placeholder="Минимум 4 символа">
+  </div>
+
+  <button class="btn" id="authBtn" onclick="doAuth()">Войти</button>
+  <div class="err" id="authErr"></div>
+
+  <div class="auth-hint">
+    Регистрация проходит в твоём браузере.<br>Номер никуда не отправляется — он просто твой логин.
+  </div>
+</div>
+
+<!-- === ОНБОРДИНГ === -->
+<div class="onb hidden" id="onbScreen">
+  <div class="onb-step" id="onbContent"></div>
+  <div class="onb-dots" id="onbDots"></div>
+  <div class="onb-nav">
+    <button class="btn btn-ghost hidden" id="onbBack" onclick="onbPrev()">← Назад</button>
+    <button class="btn" id="onbNext" onclick="onbNext()">Далее</button>
+  </div>
+</div>
+
+<!-- === ГЛАВНЫЙ ЭКРАН === -->
+<div class="wrap hidden" id="mainScreen">
+
+  <div class="topbar">
+    <div class="user">
+      <div class="ava" id="avaText">Я</div>
+      <div>
+        <div style="font-weight:700;font-size:14px" id="userName">Привет</div>
+        <div class="phone" id="userPhone">—</div>
+      </div>
+    </div>
+    <button class="logout" onclick="logout()">Выйти</button>
+  </div>
+
+  <div id="pageHome" class="page">
+    <div class="hello">
+      <h1>Магия утра</h1>
+      <p>Хэл Элрод · 30-дневная программа</p>
+    </div>
+
+    <div class="streak-bar">
+      <div class="streak-fire" id="streakFire">🔥</div>
+      <div class="streak-info">
+        <h3><span id="streakNum">0</span> дней подряд</h3>
+        <p id="streakText">Начни сегодня — не разрывай цепочку</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Прогресс</h2>
+        <span class="pc" id="progressPct">0%</span>
+      </div>
+      <div class="pbar"><div class="pfill" id="progressFill"></div></div>
+      <div class="psub" id="progressText">0 из 30 дней</div>
+      <div class="days" id="daysGrid"></div>
+    </div>
+
+    <button class="big-btn" onclick="startRitual()">
+      <div class="bico">☀️</div>
+      <div>
+        <h3>Утренний ритуал</h3>
+        <p>6 практик · ~40 минут · пошагово</p>
+      </div>
+    </button>
+
+    <div class="section-title">Практики</div>
+    <div id="practiceList"></div>
+  </div>
+
+  <div id="pageAch" class="page hidden">
+    <div class="hello">
+      <h1>Достижения</h1>
+      <p>Твои победы за 30 дней</p>
+    </div>
+    <div id="achList"></div>
+  </div>
+
+  <div id="pageJournal" class="page hidden">
+    <div class="hello">
+      <h1>Дневник</h1>
+      <p>День <span id="journalDay">1</span></p>
+    </div>
+    <div class="journal">
+      <div class="journal-q">Что сегодня получилось?</div>
+      <textarea id="jq1" placeholder="Пиши как есть..."></textarea>
+      <div class="journal-q">Что было сложно?</div>
+      <textarea id="jq2" placeholder="Честно с собой..."></textarea>
+      <div class="journal-q">Что замечаю в себе?</div>
+      <textarea id="jq3" placeholder="Мысли, ощущения..."></textarea>
+      <button class="btn" onclick="saveJournal()" style="margin-top:20px">Сохранить запись</button>
+      <div class="err" id="journalMsg" style="color:var(--success)"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- === ЭКРАН ПРАКТИКИ (открывается поверх) === -->
+<div class="practice-screen hidden" id="practiceScreen">
+  <div class="ps-head">
+    <button class="ps-back" onclick="closePractice()">←</button>
+    <div class="ps-head-text">
+      <h2 id="psTitle">Практика</h2>
+      <p id="psSub">—</p>
+    </div>
+  </div>
+  <div class="ps-content" id="psContent"></div>
+</div>
+
+<!-- === НИЖНЕЕ МЕНЮ === -->
+<div class="menu hidden" id="bottomMenu">
+  <button class="menu-item on" onclick="showPage('home', this)">
+    <div class="mi-ico">🏠</div>
+    <div>Главная</div>
+  </button>
+  <button class="menu-item" onclick="showPage('ach', this)">
+    <div class="mi-ico">🏆</div>
+    <div>Награды</div>
+  </button>
+  <button class="menu-item" onclick="showPage('journal', this)">
+    <div class="mi-ico">✍️</div>
+    <div>Дневник</div>
+  </button>
+</div>
+
+<!-- === МОДАЛЬНОЕ ОКНО === -->
+<div class="modal hidden" id="modal">
+  <div class="modal-box">
+    <div class="emoji" id="modalEmoji">🎉</div>
+    <h2 id="modalTitle">Поздравляем!</h2>
+    <p id="modalText">Ты сделал это.</p>
+    <button class="btn" onclick="closeModal()">Продолжить</button>
+  </div>
+</div>
+<script>
+// === ДАННЫЕ ПРАКТИК (Магия утра) ===
+const PRACTICES = [
+{
+  id:'silence', ico:'🧘', title:'Тишина', sub:'Медитация · 5 минут',
+  time:300,
+  why:'Мозг до 8 утра работает в альфа-ритме — это лучшее время для внутренней тишины. 5 минут без телефона и мыслей запускают спокойный день. Хэл Элрод называет это «внутренним душем» — ты смываешь шум, который накопился за ночь и с утра.',
+  how:[
+    'Сядь на край кровати или на стул. Спина прямая, но не напряжённая.',
+    'Закрой глаза. Руки положи на колени ладонями вверх.',
+    'Начни замечать дыхание. Не управляй им — просто наблюдай, как воздух входит и выходит.',
+    'Мысли придут. Это нормально. Не гони их — просто отметь «мысль» и вернись к дыханию.',
+    'Если за 5 минут отвлёкся 20 раз — ты не сделал ничего плохого. Это и есть практика.',
+    'Поставь таймер, чтобы не следить за временем.'
+  ],
+  result:'Спокойствие, ясность в голове. Ощущение, что ты управляешь днём, а не день тобой.',
+  mistakes:[
+    'Брать телефон в руки — теряется весь смысл',
+    'Засыпать сидя — если клонит в сон, сядь на жёсткий стул',
+    'Ожидать «просветления» — это просто тишина, не более',
+    'Ругать себя за мысли — мысли это не ты'
+  ],
+  advice:'Хэл Элрод советует: если не можешь сидеть — делай стоя. Если и это тяжело — делай на ходу. Главное — 5 минут без внешних раздражителей.'
+},
+{
+  id:'affirm', ico:'💬', title:'Аффирмации', sub:'Программирование · 5 минут',
+  time:300,
+  why:'Аффирмации — это короткие утверждения, которые ты проговариваешь вслух. Мозг верит тому, что слышит чаще всего. Если ты 10 лет повторял «я неудачник» — он поверил. Аффирмации дают ему новый сценарий. Это не магия — это нейропластичность: мозг формирует нейронные связи от повторения.',
+  how:[
+    'Встань перед зеркалом. Смотри себе прямо в глаза — это важно.',
+    'Возьми первую аффирмацию. Проговори её вслух, медленно, с чувством.',
+    'Повтори 3 раза. Не скороговоркой — вкладывай смысл.',
+    'Переходи к следующей. Достаточно 3-5 аффирмаций за раз.',
+    'В конце добавь одну свою — про то, чего хочешь именно ты.'
+  ],
+  affirm:[
+    'Я управляю своим днём',
+    'Я достоин успеха и спокойствия',
+    'Моё утро задаёт тон всему дню',
+    'Я выбираю быть здесь и сейчас',
+    'Я становлюсь лучше каждый день',
+    'Я справлюсь со всем, что придёт',
+    'Мой голос имеет значение',
+    'Я благодарен за то, что у меня есть',
+    'Я в мире с собой',
+    'У меня есть силы на то, что важно'
+  ],
+  result:'Ясное понимание, куда ты идёшь. Внутреннее «да, я справлюсь».',
+  mistakes:[
+    'Говорить без эмоций, скороговоркой — не работает',
+    'Не верить в то, что говоришь — это нормально в начале. Мозг привыкнет за 7-10 дней',
+    'Списывать чужие фразы, если они не откликаются — нужны свои слова'
+  ],
+  advice:'Хэл Элрод: «Сначала ты делаешь аффирмации, потом они делают тебя». Первые 7 дней будет неловко. Это нормально. Продолжай.'
+},
+{
+  id:'visual', ico:'🎯', title:'Визуализация', sub:'Настройка · 5 минут',
+  time:300,
+  why:'Мозг не различает реальное и ярко представленное. Когда ты детально визуализируешь свой день, мозг «проживает» его заранее — и когда день наступает, ты действуешь увереннее. Это используют спортсмены: перед прыжком они «прогоняют» его в голове десятки раз.',
+  how:[
+    'Закрой глаза. Сделай 3 глубоких вдоха.',
+    'Представь сегодняшний день. Не идеальный — просто хороший.',
+    'Что ты делаешь утром? Во что одет? Что говоришь близким?',
+    'Добавь детали: запахи, звуки, цвета. Чем конкретнее — тем сильнее.',
+    'Пройди мысленно по ключевым моментам дня. Особенно по тому, чего боишься.',
+    'Закончи на вечере: как ты чувствуешь себя, когда всё получилось?'
+  ],
+  result:'Настроенность. Ощущение, что день уже твой.',
+  mistakes:[
+    'Визуализировать «идеальную жизнь» вместо конкретного дня — это бесполезно',
+    'Прокручивать страх, а не решение — визуализируй как ты справляешься',
+    'Торопиться — 5 минут, не 1'
+  ],
+  advice:'Самый сильный приём — визуализировать то, чего боишься. Как ты делаешь это успешно. Через 2-3 недели страх исчезает.'
+},
+{
+  id:'journal', ico:'📝', title:'Дневник', sub:'Письмо · 5 минут',
+  time:300,
+  why:'Записанное — становится реальным. Пока мысль в голове — она призрак. На бумаге — она факт. Дневник благодарности переключает мозг с «мне всего мало» на «у меня многое есть». А цель на день превращает утро в намерение, а не в реакцию.',
+  how:[
+    'Возьми лист бумаги или открой этот раздел.',
+    'Напиши 3 вещи, за которые благодарен сегодня. Даже мелочи.',
+    'Напиши 1 цель на сегодня — конкретную. Не «стать лучше», а «позвонить маме».',
+    'Напиши 1 вещь, которая сегодня сделает тебя счастливым.',
+    'Перечитай вслух. Не торопись.'
+  ],
+  result:'Благодарность вместо тревоги. Фокус на главное.',
+  mistakes:[
+    'Писать общие фразы «благодарен за жизнь» — не работает',
+    'Ставить 10 целей — размоется фокус',
+    'Писать в телефон вместо бумаги — работает слабее'
+  ],
+  advice:'Хэл Элрод пишет дневник от руки. Мозг иначе обрабатывает написанное ручкой — медленнее, глубже. Если можешь — используй бумагу и ручку.'
+},
+{
+  id:'read', ico:'📖', title:'Чтение', sub:'Развитие · 10 минут',
+  time:600,
+  why:'10 минут в день = 30-40 книг за год. Но дело не в количестве — дело в том, что чтение утром задаёт мышлению планку. Ты входишь в день не с ленты Instagram, а с мыслей умных людей. Это меняет уровень, на котором ты думаешь.',
+  how:[
+    'Выбери книгу заранее — не ищи в момент практики.',
+    'Читай 10 минут. Таймер обязателен, иначе уйдёшь на час.',
+    'Читай медленно. Не глотай страницы.',
+    'Выпиши 1 мысль, которая зацепила. Хотя бы предложение.',
+    'Не читай новости и соцсети. Только книга.'
+  ],
+  result:'Мышление на другом уровне. Идеи, которые ты не получил бы сам.',
+  mistakes:[
+    'Читать новости вместо книги — это не чтение',
+    'Не выписывать — забывается 90% через день',
+    'Пытаться прочитать много — лучше 2 страницы вдумчиво, чем 20 галопом'
+  ],
+  advice:'Элрод советует: начинай день с книги о том, кем ты хочешь стать. Не о том, что происходит в мире.'
+},
+{
+  id:'sport', ico:'💪', title:'Спорт', sub:'Тело · 10 минут',
+  time:600,
+  why:'Тело — это фундамент. Если тело в тонусе — голова работает. Утренняя активность запускает метаболизм, выбрасывает эндорфины и делает следующие 10 часов продуктивнее. Дело не в «накачаться» — дело в том, чтобы разбудить тело.',
+  how:[
+    'Не думай «тренировка» — думай «разбудить тело».',
+    '10 минут достаточно. Реально.',
+    'Варианты: зарядка, прогулка быстрым шагом, бег, отжимания, планка, растяжка.',
+    'Выбери то, что нравится. Не насилуй себя.',
+    'Не листай телефон во время — только тело.'
+  ],
+  result:'Проснувшееся тело. Энергия на день.',
+  mistakes:[
+    'Планировать час — не сделаешь вообще',
+    'Начинать с тяжёлого — бросишь через 3 дня',
+    'Смотреть в телефон между подходами — теряется фокус'
+  ],
+  advice:'Элрод говорит: «Не важно, что ты делаешь. Важно, что ты двигаешься». 10 минут прогулки лучше 0 минут тренировки.'
+}
+];
+</script>
+<script>
+// === ДАННЫЕ ОНБОРДИНГА ===
+const ONB = [
+{
+  ico:'🌅',
+  title:'Это игра по книге «Магия утра»',
+  body:'<p>Хэл Элрод написал книгу о том, как изменить жизнь через утро. Но 95% людей прочитали — и ничего не сделали.</p><p><strong>Здесь по-другому.</strong> Ты не читаешь книгу. Ты играешь в неё. 30 дней — 30 уровней. Каждое утро ты проходишь 6 практик, отмечаешь выполненные, идёшь дальше.</p><p>Это не марафон «стань идеальным». Это игра «стань чуть лучше, чем вчера».</p>'
+},
+{
+  ico:'⚡',
+  title:'Что даст 30 дней',
+  body:'<p>Если будешь делать все 6 практик каждое утро — вот что произойдёт:</p><ul><li>Через 3 дня — начнёшь просыпаться без «стены»</li><li>Через 7 дней — появится ясность, куда идёшь</li><li>Через 14 дней — утро станет твоим любимым временем</li><li>Через 30 дней — ты другой человек. Серьёзно.</li></ul><p>Это не магия. Это нейропластичность. Мозг перестраивается от повторения.</p>'
+},
+{
+  ico:'🎮',
+  title:'Как устроена игра',
+  body:'<p>Каждое утро — 6 практик. Всего ~40 минут.</p><ul><li><strong>Тишина</strong> — 5 минут</li><li><strong>Аффирмации</strong> — 5 минут</li><li><strong>Визуализация</strong> — 5 минут</li><li><strong>Дневник</strong> — 5 минут</li><li><strong>Чтение</strong> — 10 минут</li><li><strong>Спорт</strong> — 10 минут</li></ul><p>Отмечаешь выполненные — идёт прогресс. 30 дней подряд — прошёл книгу.</p><p><strong>Пропустил день?</strong> Не страшно. Продолжай с того места, где остановился. Но не пропускай два подряд.</p>'
+},
+{
+  ico:'🎒',
+  title:'Что понадобится',
+  body:'<p>Ничего особенного:</p><ul><li><strong>20 минут утром</strong> (практики можно разбить)</li><li><strong>Блокнот и ручка</strong> — для дневника</li><li><strong>Книга</strong> — любая полезная, для чтения</li><li><strong>Тишина</strong> — попроси близких не отвлекать</li><li><strong>Место</strong> — где тебя никто не тронет</li></ul><p>Можно делать прямо в кровати — главное не заснуть.</p>'
+},
+{
+  ico:'🚀',
+  title:'Готов?',
+  body:'<p>Ты не обязан делать всё идеально. Ты не обязан делать всё сразу. Начни с 2 практик — тишины и аффирмаций. Если идёт — добавляй остальные.</p><p><strong>Правило игры простое:</strong> отмечай то, что сделал. Не то, что «должен был». Прогресс — это честность с собой.</p><p>Жми «Начать» — и вперёд. Завтра утром ты уже будешь другим человеком.</p>'
+}
+];
+
+// === СОСТОЯНИЕ ===
+let user = null;
+let state = {};
+let onbIndex = 0;
+let currentPractice = null;
+let timerInterval = null;
+let timerRemaining = 0;
+
+// === ЗАГРУЗКА ПРИ СТАРТЕ ===
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('praktikum_user');
+  if (saved) {
+    user = JSON.parse(saved);
+    loadUserState();
+    if (!state.onboarded) {
+      showOnboarding();
+    } else {
+      showMain();
+    }
+  } else {
+    showAuth();
+  }
+});
+
+// === ЭКРАНЫ ===
+function hideAll() {
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('onbScreen').classList.add('hidden');
+  document.getElementById('mainScreen').classList.add('hidden');
+  document.getElementById('bottomMenu').classList.add('hidden');
+  document.getElementById('practiceScreen').classList.add('hidden');
+}
+
+function showAuth() {
+  hideAll();
+  document.getElementById('authScreen').classList.remove('hidden');
+}
+
+function showOnboarding() {
+  hideAll();
+  onbIndex = 0;
+  renderOnb();
+  document.getElementById('onbScreen').classList.remove('hidden');
+}
+
+function showMain() {
+  hideAll();
+  document.getElementById('mainScreen').classList.remove('hidden');
+  document.getElementById('bottomMenu').classList.remove('hidden');
+  renderUser();
+  renderProgress();
+  renderPractices();
+  renderAchievements();
+  showPage('home', document.querySelector('.menu-item'));
+}
+
+// === ВХОД / РЕГИСТРАЦИЯ ===
+let authMode = 'login';
+
+function switchTab(mode) {
+  authMode = mode;
+  document.getElementById('tabLogin').classList.toggle('on', mode === 'login');
+  document.getElementById('tabReg').classList.toggle('on', mode === 'reg');
+  document.getElementById('authBtn').textContent = mode === 'login' ? 'Войти' : 'Зарегистрироваться';
+  document.getElementById('authErr').textContent = '';
+}
+
+function normalizePhone(v) {
+  const digits = v.replace(/\D/g, '');
+  return digits;
+}
+
+function formatPhoneInput(el) {
+  let v = el.value.replace(/\D/g, '');
+  if (v.startsWith('8')) v = '7' + v.slice(1);
+  if (!v.startsWith('7')) v = '7' + v;
+  v = v.slice(0, 11);
+  let out = '+7';
+  if (v.length > 1) out += ' ' + v.slice(1, 4);
+  if (v.length >= 4) out += ' ' + v.slice(4, 7);
+  if (v.length >= 7) out += '-' + v.slice(7, 9);
+  if (v.length >= 9) out += '-' + v.slice(9, 11);
+  el.value = out;
+}
+
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'phone') formatPhoneInput(e.target);
+});
+
+function doAuth() {
+  const phoneRaw = document.getElementById('phone').value;
+  const pass = document.getElementById('password').value;
+  const err = document.getElementById('authErr');
+  const phone = normalizePhone(phoneRaw);
+
+  err.textContent = '';
+
+  if (phone.length !== 11) { err.textContent = 'Введите номер полностью'; return; }
+  if (pass.length < 4) { err.textContent = 'Пароль минимум 4 символа'; return; }
+
+  const users = JSON.parse(localStorage.getItem('praktikum_users') || '{}');
+
+  if (authMode === 'reg') {
+    if (users[phone]) { err.textContent = 'Этот номер уже зарегистрирован'; return; }
+    users[phone] = { pass: pass, created: Date.now() };
+    localStorage.setItem('praktikum_users', JSON.stringify(users));
+    user = { phone: phone };
+    localStorage.setItem('praktikum_user', JSON.stringify(user));
+    loadUserState();
+    showOnboarding();
+  } else {
+    if (!users[phone]) { err.textContent = 'Номер не найден. Зарегистрируйтесь.'; return; }
+    if (users[phone].pass !== pass) { err.textContent = 'Неверный пароль'; return; }
+    user = { phone: phone };
+    localStorage.setItem('praktikum_user', JSON.stringify(user));
+    loadUserState();
+    if (!state.onboarded) showOnboarding();
+    else showMain();
+  }
+}
+
+function logout() {
+  if (!confirm('Выйти из аккаунта? Прогресс сохранится.')) return;
+  localStorage.removeItem('praktikum_user');
+  user = null;
+  state = {};
+  showAuth();
+}
+
+// === STATE (прогресс пользователя) ===
+function stateKey() { return 'praktikum_state_' + user.phone; }
+
+function loadUserState() {
+  const saved = localStorage.getItem(stateKey());
+  if (saved) {
+    state = JSON.parse(saved);
+  } else {
+    state = { onboarded: false, days: {}, practices: {}, journal: {}, achievements: [] };
+  }
+  if (!state.days) state.days = {};
+  if (!state.practices) state.practices = {};
+  if (!state.journal) state.journal = {};
+  if (!state.achievements) state.achievements = [];
+}
+
+function saveState() {
+  localStorage.setItem(stateKey(), JSON.stringify(state));
+}
+
+// === ОНБОРДИНГ ===
+function renderOnb() {
+  const s = ONB[onbIndex];
+  document.getElementById('onbContent').innerHTML =
+    `<div class="onb-ico">${s.ico}</div><h2>${s.title}</h2>${s.body}`;
+  document.getElementById('onbDots').innerHTML = ONB.map((_, i) =>
+    `<div class="onb-dot ${i === onbIndex ? 'on' : ''}"></div>`).join('');
+  document.getElementById('onbBack').classList.toggle('hidden', onbIndex === 0);
+  document.getElementById('onbNext').textContent = onbIndex === ONB.length - 1 ? 'Начать путь 🚀' : 'Далее';
+}
+
+function onbNext() {
+  if (onbIndex < ONB.length - 1) { onbIndex++; renderOnb(); }
+  else {
+    state.onboarded = true;
+    saveState();
+    showMain();
+  }
+}
+
+function onbPrev() { if (onbIndex > 0) { onbIndex--; renderOnb(); } }
+
+// === ГЛАВНЫЙ ЭКРАН ===
+function renderUser() {
+  const phone = user.phone;
+  const short = '+7 ' + phone.slice(1, 4) + ' *** ' + phone.slice(7, 9) + ' ' + phone.slice(9);
+  document.getElementById('userPhone').textContent = short;
+  document.getElementById('userName').textContent = 'Привет';
+  document.getElementById('avaText').textContent = phone.slice(-2);
+}
+
+function currentDay() {
+  const done = Object.keys(state.days).filter(k => state.days[k]).length;
+  return Math.min(done + 1, 30);
+}
+
+function renderProgress() {
+  const done = Object.keys(state.days).filter(k => state.days[k]).length;
+  const pct = Math.round(done / 30 * 100);
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = done + ' из 30 дней';
+
+  const streak = calcStreak();
+  document.getElementById('streakNum').textContent = streak;
+  document.getElementById('streakText').textContent = streak === 0
+    ? 'Начни сегодня — не разрывай цепочку'
+    : streak < 3 ? 'Хорошее начало!' : streak < 7 ? 'Ты входишь в ритм!' : 'Огонь!';
+
+  const td = currentDay();
+  document.getElementById('daysGrid').innerHTML = Array.from({ length: 30 }, (_, i) => {
+    const d = i + 1;
+    const dn = state.days[d];
+    const it = d === td && !dn;
+    return `<div class="day ${dn ? 'done' : ''} ${it ? 'today' : ''}" onclick="toggleDay(${d})">${d}</div>`;
+  }).join('');
+}
+
+function calcStreak() {
+  let s = 0;
+  for (let i = 1; i <= 30; i++) { if (state.days[i]) s++; else break; }
+  return s;
+}
+
+function toggleDay(d) {
+  state.days[d] = !state.days[d];
+  saveState();
+  renderProgress();
+  renderPractices();
+  checkAchievements();
+}
+</script>
+<script>
+// === РЕНДЕР ПРАКТИК ===
+function renderPractices() {
+  const td = currentDay();
+  document.getElementById('practiceList').innerHTML = PRACTICES.map(p => {
+    const key = td + '-' + p.id;
+    const done = state.practices[key];
+    return `
+      <div class="practice ${done ? 'done' : ''}" onclick="openPractice('${p.id}')">
+        <div class="p-ico">${p.ico}</div>
+        <div class="p-body">
+          <div class="p-title">${p.title}</div>
+          <div class="p-sub">${p.sub}</div>
+        </div>
+        <div class="p-check">✓</div>
+        <div class="p-arrow">›</div>
+      </div>`;
+  }).join('');
+}
+
+// === ЭКРАН ПРАКТИКИ ===
+function openPractice(id) {
+  const p = PRACTICES.find(x => x.id === id);
+  if (!p) return;
+  currentPractice = p;
+  const td = currentDay();
+  const key = td + '-' + p.id;
+  const done = state.practices[key];
+
+  document.getElementById('psTitle').textContent = p.title;
+  document.getElementById('psSub').textContent = p.sub;
+
+  let html = `
+    <div class="ps-hero">
+      <div class="ico">${p.ico}</div>
+      <div class="time">⏱ ${Math.round(p.time / 60)} минут</div>
+    </div>
+
+    <div class="ps-block">
+      <h3>💡 Зачем это нужно</h3>
+      <p>${p.why}</p>
+    </div>
+
+    <div class="ps-block">
+      <h3>🎬 Как делать</h3>
+      <ol class="steps">
+        ${p.how.map(s => `<li>${s}</li>`).join('')}
+      </ol>
+    </div>`;
+
+  if (p.affirm) {
+    html += `
+    <div class="ps-block">
+      <h3>✨ Готовые аффирмации</h3>
+      <ul class="affirm-list">
+        ${p.affirm.map(a => `<li onclick="copyAffirm(this)">«${a}»</li>`).join('')}
+      </ul>
+      <p style="font-size:13px;color:var(--muted);margin-top:10px">Тапни на любую — она скопируется в буфер.</p>
+    </div>`;
+  }
+
+  html += `
+    <div class="ps-block">
+      <h3>⏱ Таймер</h3>
+      <div class="timer-box">
+        <div class="timer-display" id="timerDisplay">${formatTime(p.time)}</div>
+        <div class="timer-btns">
+          <button class="btn" id="timerBtn" onclick="toggleTimer()">▶ Старт</button>
+          <button class="btn btn-ghost" onclick="resetTimer()">↺ Сброс</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ps-block">
+      <h3>🎯 Что должно получиться</h3>
+      <p>${p.result}</p>
+    </div>
+
+    <div class="ps-block">
+      <h3>⚠️ Частые ошибки</h3>
+      <ul class="mistakes">
+        ${p.mistakes.map(m => `<li>${m}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="ps-block">
+      <h3>💬 Совет</h3>
+      <div class="advice">${p.advice}</div>
+    </div>
+
+    <button class="btn" style="margin-top:20px;${done ? 'background:var(--success)' : ''}" onclick="togglePracticeDone('${p.id}')">
+      ${done ? '✓ Выполнено — отметить как невыполненное' : '○ Отметить выполненным'}
+    </button>
+  `;
+
+  document.getElementById('psContent').innerHTML = html;
+  document.getElementById('practiceScreen').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  timerRemaining = p.time;
+}
+
+function closePractice() {
+  document.getElementById('practiceScreen').classList.add('hidden');
+  document.body.style.overflow = '';
+  stopTimer();
+  currentPractice = null;
+  renderPractices();
+}
+
+function togglePracticeDone(id) {
+  const td = currentDay();
+  const key = td + '-' + id;
+  state.practices[key] = !state.practices[key];
+  saveState();
+  renderPractices();
+  checkAchievements();
+  closePractice();
+}
+
+function copyAffirm(el) {
+  const text = el.textContent.replace(/[«»]/g, '');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+    el.style.background = 'rgba(0,214,143,.2)';
+    setTimeout(() => el.style.background = '', 500);
+  }
+}
+
+// === ТАЙМЕР ===
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function toggleTimer() {
+  const btn = document.getElementById('timerBtn');
+  if (timerInterval) {
+    stopTimer();
+    btn.textContent = '▶ Продолжить';
+  } else {
+    startTimer();
+    btn.textContent = '⏸ Пауза';
+  }
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    const el = document.getElementById('timerDisplay');
+    if (el) el.textContent = formatTime(Math.max(0, timerRemaining));
+    if (timerRemaining <= 0) {
+      stopTimer();
+      playBeep();
+      if (el) el.textContent = '✓ Готово';
+      const btn = document.getElementById('timerBtn');
+      if (btn) btn.textContent = '▶ Старт';
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function resetTimer() {
+  stopTimer();
+  if (currentPractice) {
+    timerRemaining = currentPractice.time;
+    const el = document.getElementById('timerDisplay');
+    if (el) el.textContent = formatTime(timerRemaining);
+    const btn = document.getElementById('timerBtn');
+    if (btn) btn.textContent = '▶ Старт';
+  }
+}
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 800;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(); osc.stop(ctx.currentTime + 0.5);
+  } catch(e) {}
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+}
+
+// === УТРЕННИЙ РИТУАЛ ===
+function startRitual() {
+  const td = currentDay();
+  const firstUndone = PRACTICES.find(p => !state.practices[td + '-' + p.id]);
+  if (firstUndone) openPractice(firstUndone.id);
+  else openPractice(PRACTICES[0].id);
+}
+
+// === НАВИГАЦИЯ ===
+function showPage(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  const map = { home: 'pageHome', ach: 'pageAch', journal: 'pageJournal' };
+  document.getElementById(map[page]).classList.remove('hidden');
+  document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('on'));
+  if (el) el.classList.add('on');
+  if (page === 'journal') loadJournal();
+  if (page === 'ach') renderAchievements();
+}
+
+// === ДНЕВНИК ===
+function loadJournal() {
+  const td = currentDay();
+  document.getElementById('journalDay').textContent = td;
+  const j = state.journal[td] || {};
+  document.getElementById('jq1').value = j.q1 || '';
+  document.getElementById('jq2').value = j.q2 || '';
+  document.getElementById('jq3').value = j.q3 || '';
+}
+
+function saveJournal() {
+  const td = currentDay();
+  state.journal[td] = {
+    q1: document.getElementById('jq1').value,
+    q2: document.getElementById('jq2').value,
+    q3: document.getElementById('jq3').value
+  };
+  saveState();
+  const msg = document.getElementById('journalMsg');
+  msg.textContent = '✓ Сохранено';
+  setTimeout(() => msg.textContent = '', 2000);
+}
+
+// === ДОСТИЖЕНИЯ ===
+const ACH = [
+  { id: 'first', ico: '🌟', title: 'Первый шаг', desc: 'Начал путь', check: () => Object.keys(state.days).length >= 1 },
+  { id: 'three', ico: '🔥', title: 'Три дня подряд', desc: 'Вошёл в ритм', check: () => calcStreak() >= 3 },
+  { id: 'week', ico: '⚡', title: 'Неделя силы', desc: '7 дней подряд', check: () => calcStreak() >= 7 },
+  { id: 'half', ico: '💎', title: 'Половина пути', desc: '15 дней', check: () => Object.keys(state.days).filter(k => state.days[k]).length >= 15 },
+  { id: 'month', ico: '👑', title: 'Мастер утра', desc: '30 дней', check: () => Object.keys(state.days).filter(k => state.days[k]).length >= 30 },
+  { id: 'perfect', ico: '🎯', title: 'Идеальный день', desc: 'Все 6 практик за день', check: () => {
+    const td = currentDay();
+    return PRACTICES.every(p => state.practices[td + '-' + p.id]);
+  }}
+];
+
+function renderAchievements() {
+  document.getElementById('achList').innerHTML = ACH.map(a => {
+    const unlocked = state.achievements.includes(a.id);
+    return `
+      <div class="achievement ${unlocked ? '' : 'locked'}">
+        <div class="ach-badge">${unlocked ? a.ico : '🔒'}</div>
+        <div class="ach-info">
+          <h4>${a.title}</h4>
+          <p>${a.desc}</p>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function checkAchievements() {
+  ACH.forEach(a => {
+    if (!state.achievements.includes(a.id) && a.check()) {
+      state.achievements.push(a.id);
+      saveState();
+      showModal(a.ico, 'Достижение!', a.title + ' — ' + a.desc);
+    }
+  });
+}
+
+// === МОДАЛЬНОЕ ОКНО ===
+function showModal(emoji, title, text) {
+  document.getElementById('modalEmoji').textContent = emoji;
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalText').textContent = text;
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
+</script>
+</body>
+</html>
